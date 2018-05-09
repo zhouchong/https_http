@@ -87,7 +87,7 @@ public class HttpsUtil {
      * input  : String url, String json
      * output : String response.body()
      **********************************************************************************************/
-    public void SyncPost(String dataSend) throws IOException, RemoteException {
+    public boolean SyncPost(String dataSend) throws IOException, RemoteException {
         Logger.t(TAG).d(  "SyncPost: executed");
         Request request;
 
@@ -104,7 +104,7 @@ public class HttpsUtil {
         } catch (Exception e) {
             Logger.t(TAG).d("SyncPost: 非法URL");
             e.printStackTrace();
-            return;
+            return false;
         }
 
         Response response = null;
@@ -113,35 +113,35 @@ public class HttpsUtil {
         } catch (ConnectException e) {
             Logger.t(TAG).d( "SyncPost() ConnectException : " + e);
             e.printStackTrace();
-            return;
+            return false;
         } catch (SocketTimeoutException e) {
             Logger.t(TAG).d("SyncPost() SocketTimeoutException : " + e);
             e.printStackTrace();
-            return;
+            return false;
         } catch (IOException e) {
             Logger.t(TAG).d( "SyncPost() IOException : " + e);
             e.printStackTrace();
-            return;
+            return false;
         } catch (NullPointerException e) {
             Logger.t(TAG).d( "SyncPost() NullPointerException : " + e);
             e.printStackTrace();
-            return;
+            return false;
         }
         if (response == null) {
             Logger.t(TAG).d( "SyncPost() response is null");
-            return;
+            return false;
         }
         if (response.isSuccessful()) {
             Logger.t(TAG).d("SyncPost() Http response code: " + response.code());
 
             if (response.code() != 200) {
                 Logger.t(TAG).d( "SyncPost() response.code != 200: " + response.code());
-                return;
+                return false;
             }
-            return;
+            return true;
         } else {
             Logger.t(TAG).d( "SyncPost() Http response code: " + response.code());
-            return;
+            return false;
         }
     }
 

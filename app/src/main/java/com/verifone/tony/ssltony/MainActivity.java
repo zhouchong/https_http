@@ -103,6 +103,9 @@ public class MainActivity extends AppCompatActivity {
 
             if (urls[0]) {
                 HttpsUtil.getInstance(context);
+                str = "已连接\n";
+                handler.post(new myRunnable(str));
+                Logger.t(TAG).d(str);
             }
             return true;
         }
@@ -127,7 +130,16 @@ public class MainActivity extends AppCompatActivity {
             handler.post(new myRunnable(str));
             //todo
             try {
-                HttpsUtil.getInstance(context).SyncPost("Hello World!");
+                boolean ret = HttpsUtil.getInstance(context).SyncPost("Hello World!");
+                if (ret) {
+                    str = "发送成功\n";
+                    handler.post(new myRunnable(str));
+                    Logger.t(TAG).d(str);
+                } else {
+                    str = "发送失败\n";
+                    handler.post(new myRunnable(str));
+                    Logger.t(TAG).d(str);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (RemoteException e) {
@@ -158,11 +170,11 @@ public class MainActivity extends AppCompatActivity {
             String getStr = HttpsUtil.getInstance(context).SyncGet();
             if (getStr != null) {
                 str = getStr;
-                str += "\n";
+                str += "\n接收成功\n";
                 handler.post(new myRunnable(str));
-                Logger.t(TAG).d( "SyncGet(): " + getStr);
+                Logger.t(TAG).d( "接收成功: " + getStr);
             } else {
-                Logger.t(TAG).e( "SyncGet() = NULL");
+                Logger.t(TAG).e( "接收失败");
             }
 
             return true;
