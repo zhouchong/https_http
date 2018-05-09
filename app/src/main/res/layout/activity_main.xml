@@ -48,15 +48,15 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:gravity="center"
-        android:textOff="OFF"
-        android:textOn="ON"/>
+        android:textOff="连接"
+        android:textOn="断开"/>
 
     <Button
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="按键1">
+        android:text="发送">
     </Button>
 
     <Button
@@ -64,7 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="按键2">
+        android:text="接收">
     </Button>
 
     <Button

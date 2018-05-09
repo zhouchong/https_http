@@ -1,5 +1,8 @@
 package com.verifone.tony.ssltony;
 
+import android.app.Activity;
+import android.content.Context;
+import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.AsyncTask;
@@ -14,10 +17,13 @@ import android.widget.ToggleButton;
 
 import com.orhanobut.logger.Logger;
 
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "tony";
+    private static final String TAG = "------------tony";
     TextView txt;
     private String str = "";
+    private Context context;
 
     //将调试信息显示到TextView
     private Handler handler = new Handler();
@@ -38,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.context = getApplicationContext();
 
         //初始化第三方log库
         Logger.init("vrfn").hideThreadInfo();
@@ -93,7 +100,10 @@ public class MainActivity extends AppCompatActivity {
             str = "Doing toggleButton ...\n";
             str += "param = " + urls[0] + "\n";
             handler.post(new myRunnable(str));
-            //todo
+
+            if (urls[0]) {
+                HttpsUtil.getInstance(context);
+            }
             return true;
         }
 
@@ -116,6 +126,13 @@ public class MainActivity extends AppCompatActivity {
             str += "param = " + urls[0] + "\n";
             handler.post(new myRunnable(str));
             //todo
+            try {
+                HttpsUtil.getInstance(context).SyncPost("Hello World!");
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
             return true;
         }
 
@@ -138,6 +155,16 @@ public class MainActivity extends AppCompatActivity {
             str += "param = " + urls[0] + "\n";
             handler.post(new myRunnable(str));
             //todo
+            String getStr = HttpsUtil.getInstance(context).SyncGet();
+            if (getStr != null) {
+                str = getStr;
+                str += "\n";
+                handler.post(new myRunnable(str));
+                Logger.t(TAG).d( "SyncGet(): " + getStr);
+            } else {
+                Logger.t(TAG).e( "SyncGet() = NULL");
+            }
+
             return true;
         }
 
