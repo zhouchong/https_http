@@ -8,6 +8,7 @@ import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.security.KeyStore;
@@ -15,6 +16,7 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateFactory;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -39,9 +41,12 @@ public class HttpsUtil {
     private OkHttpClient client;
 
 
-    private static String SERVER_IP = "https://10.172.64.23:8443";
-    private static String SERVER_CER_PATH = "tomcat.cer";
-    //private static String SERVER_CER_PATH = "client.cer";
+//    private static String SERVER_IP = "https://10.172.24.55:8443/tony";
+//    private static String SERVER_IP = "https://10.172.64.23:8443/tony";
+//    private static String SERVER_CER_PATH = "tomcat.pem";
+
+    private static String SERVER_IP = "https://120.204.69.139:30000/mjc/webtrans/VPB_lb";
+    private static String SERVER_CER_PATH = "cacert.pem";
 
     SharedPreferences param;
     SharedPreferences.Editor editor;
@@ -64,7 +69,7 @@ public class HttpsUtil {
     }
 
     public HttpsUtil(Context context) {
-        Logger.t(TAG).d( "HttpsUtil");
+        Logger.t(TAG).d(  "HttpsUtil IP: " + SERVER_IP);
         if (false) {
             Logger.t(TAG).d("HttpUtil: 不需要ssl证书");
             client = new OkHttpClient();
@@ -87,25 +92,36 @@ public class HttpsUtil {
      * input  : String url, String json
      * output : String response.body()
      **********************************************************************************************/
-    public boolean SyncPost(String dataSend) throws IOException, RemoteException {
-        Logger.t(TAG).d(  "SyncPost: executed");
+    public boolean SyncPost(byte[] dataSend) throws IOException, RemoteException {
+        Logger.t(TAG).d(  "SyncPost IP: " + SERVER_IP);
         Request request;
 
         String url = SERVER_IP;
         try {
             MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-            RequestBody body = RequestBody.create(JSON, dataSend);
+            MediaType TEXT = MediaType.parse("x-ISO-TPDU/x-auth");
+            RequestBody body = RequestBody.create(TEXT, dataSend);
+            //RequestBody body = RequestBody.create(TEXT, "123");
 
-            request = new Request.Builder().
-                    url(url).
-                    addHeader("Accept-Encoding", "deflate").
-                    post(body).
-                    build();
+            //Logger.t(TAG).d( "byte: " + dataSend[0] + dataSend[1]);
+
+            request = new Request.Builder()
+                    .url(url)
+                    .header("User-Agent", "Donjin Http 0.1")
+                    .header("Cache-Control", "no-cache")
+                    .header("Content-Type", "x-ISO-TPDU/x-auth")
+                    .header("Accept", "*/*")
+                    //.header("HOST", "120.204.69.139:30000")
+                    //.header("Content-Length", "93")
+                    .post(body)
+                    .build();
         } catch (Exception e) {
             Logger.t(TAG).d("SyncPost: 非法URL");
             e.printStackTrace();
             return false;
         }
+
+        Logger.t(TAG).d( "head: " + request.headers());
 
         Response response = null;
         try {
@@ -133,21 +149,50 @@ public class HttpsUtil {
         }
         if (response.isSuccessful()) {
             Logger.t(TAG).d("SyncPost() Http response code: " + response.code());
+            StringBuilder stringBuilder = new StringBuilder();
+            Headers responseHeaders = response.headers();
+            for (int i = 0; i < responseHeaders.size(); i++) {
+                stringBuilder.append(responseHeaders.name(i) + ": " + responseHeaders.value(i) + "\n");
+            }
+            Logger.t(TAG).d( "SyncPost() Http response head: \n" + stringBuilder.toString());
 
             if (response.code() != 200) {
                 Logger.t(TAG).d( "SyncPost() response.code != 200: " + response.code());
                 return false;
             }
+
+            Logger.t(TAG).d( "message : " + response.message());
+            String body = response.body().string(); //只能取一次
+            Logger.t(TAG).d( "body len = " + body.length());
+            //Logger.t(TAG).d( "body : " + response.body().string());
+
+            Logger.t(TAG).d( "body : \n" + new BigInteger(1, body.getBytes()).toString(16));
+
             return true;
         } else {
+            StringBuilder stringBuilder = new StringBuilder();
+            Headers responseHeaders = response.headers();
+            for (int i = 0; i < responseHeaders.size(); i++) {
+                stringBuilder.append(responseHeaders.name(i) + ": " + responseHeaders.value(i) + "\n");
+            }
             Logger.t(TAG).d( "SyncPost() Http response code: " + response.code());
+            Logger.t(TAG).d( "SyncPost() Http response head: \n" + stringBuilder.toString());
+
             return false;
         }
     }
 
     public String SyncGet() {
         String url = SERVER_IP;
-        Request request = new Request.Builder().url(url).build();
+        Logger.t(TAG).d(  "SyncGet IP: " + SERVER_IP);
+        Request request = new Request.Builder()
+                .url(url)
+                .header("User-Agent", "Donjin Http 0.1")
+                .header("Cache-Control", "no-cache")
+                .header("Content-Type", "x-ISO-TPDU/x-auth")
+                .header("Accept", "*/*")
+                .get()
+                .build();
         try {
             Response response = client.newCall(request).execute();
             if (response.isSuccessful()) {

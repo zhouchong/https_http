@@ -18,12 +18,17 @@ import android.widget.ToggleButton;
 import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "------------tony";
     TextView txt;
     private String str = "";
     private Context context;
+
+    private static String MSG = "POST /mjc/webtrans/VPB_lb HTTP/1.1\r\nHOST: 120.204.69.139:30000\r\nUser-Agent: Donjin Http 0.1\r\nCache-Control: no-cache\r\nContent-Type:x-ISO-TPDU/x-auth\r\nAccept: */*\r\nContent-Length: 93\r\n\r\n";
+    private static String hexStr = "005b600601000060320043000108000020000000c0001600014930303030303031383130323331303036303531303030320011000004300030002953657175656e6365204e6f313633323639563332392d3039352d3030330003303132";
 
     //将调试信息显示到TextView
     private Handler handler = new Handler();
@@ -130,7 +135,9 @@ public class MainActivity extends AppCompatActivity {
             handler.post(new myRunnable(str));
             //todo
             try {
-                boolean ret = HttpsUtil.getInstance(context).SyncPost("Hello World!");
+                Logger.t(TAG).d("Send Len: " + hexStr2Bytes(hexStr).length);
+                Logger.t(TAG).d(new BigInteger(1, hexStr2Bytes(hexStr)).toString(16));
+                boolean ret = HttpsUtil.getInstance(context).SyncPost(hexStr2Bytes(hexStr));
                 if (ret) {
                     str = "发送成功\n";
                     handler.post(new myRunnable(str));
@@ -213,6 +220,49 @@ public class MainActivity extends AppCompatActivity {
                 handler.post(new myRunnable(str));
             }
         }
+    }
+
+    public static String hexStr2Str(String hexStr) {
+        if (hexStr == null || hexStr.length() <= 0) {
+            return null;
+        }
+        String str = "0123456789ABCDEF";
+        char[] hexs = hexStr.toCharArray();
+        byte[] bytes = new byte[hexStr.length() / 2];
+        for (int i = 0; i < bytes.length; i++) {
+            int n = str.indexOf(hexs[(2 * i)]) * 16;
+            n += str.indexOf(hexs[(2 * i + 1)]);
+            bytes[i] = ((byte) (n & 0xFF));
+        }
+        try {
+            return new String(bytes, "ISO-8859-1");
+        } catch (UnsupportedEncodingException localUnsupportedEncodingException) {
+        }
+        return "";
+    }
+
+    public static byte[] hexStr2Bytes(String src) {
+        if (src == null || src.length() <= 0) {
+            return null;
+        }
+        try {
+            int m = 0;
+            int n = 0;
+            if (src.length() % 2 != 0) {
+                src = "0" + src;
+            }
+            int l = src.length() / 2;
+
+            byte[] ret = new byte[l];
+            for (int i = 0; i < l; i++) {
+                m = i * 2 + 1;
+                n = m + 1;
+                ret[i] = Integer.decode("0x" + src.substring(i * 2, m) + src.substring(m, n)).byteValue();
+            }
+            return ret;
+        } catch (Exception e) {
+        }
+        return null;
     }
 }
 
