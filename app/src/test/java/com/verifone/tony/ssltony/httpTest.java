@@ -108,7 +108,8 @@ public class httpTest {
             System.out.println( "body len = " + body.length());
             //System.out.println( "body : " + response.body().string());
 
-            System.out.println( "body : \n" + new BigInteger(1, body.getBytes()).toString(16));
+            System.out.println( "body(ascii) : \n" + body);
+            System.out.println( "body(hex) : \n" + new BigInteger(1, body.getBytes()).toString(16));
 
             return;
         } else {

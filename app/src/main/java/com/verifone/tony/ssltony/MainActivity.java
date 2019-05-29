@@ -17,7 +17,9 @@ import android.widget.ToggleButton;
 
 import com.orhanobut.logger.Logger;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 
@@ -27,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
     private String str = "";
     private Context context;
 
-    private static String MSG = "POST /mjc/webtrans/VPB_lb HTTP/1.1\r\nHOST: 120.204.69.139:30000\r\nUser-Agent: Donjin Http 0.1\r\nCache-Control: no-cache\r\nContent-Type:x-ISO-TPDU/x-auth\r\nAccept: */*\r\nContent-Length: 93\r\n\r\n";
     private static String hexStr = "005b600601000060320043000108000020000000c0001600014930303030303031383130323331303036303531303030320011000004300030002953657175656e6365204e6f313633323639563332392d3039352d3030330003303132";
 
     //将调试信息显示到TextView
@@ -135,15 +136,26 @@ public class MainActivity extends AppCompatActivity {
             handler.post(new myRunnable(str));
             //todo
             try {
-                Logger.t(TAG).d("Send Len: " + hexStr2Bytes(hexStr).length);
-                Logger.t(TAG).d(new BigInteger(1, hexStr2Bytes(hexStr)).toString(16));
-                boolean ret = HttpsUtil.getInstance(context).SyncPost(hexStr2Bytes(hexStr));
+//                Logger.t(TAG).d("Send Len: " + hexStr2Bytes(hexStr).length);
+//                Logger.t(TAG).d(new BigInteger(1, hexStr2Bytes(hexStr)).toString(16));
+//                boolean ret = HttpsUtil.getInstance(context).SyncPost(hexStr2Bytes(hexStr));
+
+                //amex
+                String sendData = "AuthorizationRequestParam=600000000008002020010000C20000980000000003000037333434333231323832343237313837363520202020200003313032";
+
+//                byte[] sendDataPackage = new byte[sendData.getBytes().length + 2];
+//                sendDataPackage[0] = (byte) ((sendData.getBytes().length >> 8) & 0xFF);
+//                sendDataPackage[1] = (byte) (sendData.getBytes().length & 0xFF);
+//                System.arraycopy( sendData.getBytes(), 0, sendDataPackage, 2, sendData.getBytes().length );
+                boolean ret = HttpsUtil.getInstance(context).SyncPost(sendData.getBytes());
+
+
                 if (ret) {
-                    str = "发送成功\n";
+                    str = "通讯成功\n";
                     handler.post(new myRunnable(str));
                     Logger.t(TAG).d(str);
                 } else {
-                    str = "发送失败\n";
+                    str = "通讯失败\n";
                     handler.post(new myRunnable(str));
                     Logger.t(TAG).d(str);
                 }
@@ -205,6 +217,18 @@ public class MainActivity extends AppCompatActivity {
             str = "Doing Button3Task ...\n";
             str += "param = " + urls[0] + "\n";
             handler.post(new myRunnable(str));
+            try {
+                System.out.println("========================");//此时str就保存了一行字符串
+                Process process = Runtime.getRuntime().exec("getprop wlan.driver.status");
+                InputStreamReader ir = new InputStreamReader(process.getInputStream());
+                BufferedReader input = new BufferedReader(ir);
+                String str = null;
+                while((str = input.readLine()) != null){
+                    System.out.println("------------ " + str);//此时str就保存了一行字符串
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             //todo
             return true;
         }
