@@ -21,6 +21,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.math.BigInteger;
 
 public class MainActivity extends AppCompatActivity {
@@ -238,12 +240,45 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Button3Task Success", Toast.LENGTH_SHORT).show();
                 str = "Button3Task Success\n";
                 handler.post(new myRunnable(str));
+
+                str = "Prop [" + testGetProp() + "]\n";
+                handler.post(new myRunnable(str));
+
             } else {
                 Toast.makeText(MainActivity.this, "Button3Task Failed", Toast.LENGTH_SHORT).show();
                 str = "Button3Task Failed\n";
                 handler.post(new myRunnable(str));
             }
         }
+    }
+
+    private int testGetProp() {
+
+        /**
+         * debug.sf.hwc.canUseABC
+         * debug.egl.hw
+         * debug.mdpcomp.logs
+         * sys.apk.install true
+         * persist.radio.jbims
+         */
+        return readProp("debug.sf.hwc.canUseABC");
+    }
+
+    private static int readProp(String prop) {
+        try {
+            Process process = Runtime.getRuntime().exec("getprop " + prop);
+            InputStreamReader ir = new InputStreamReader(process.getInputStream());
+            BufferedReader input = new BufferedReader(ir);
+            String buf = input.readLine(); //读一次就没了, 所以一定要缓存, 不能再直接用input.readLine()了.
+            if (buf == null || "".equals(buf))
+                return 0;
+            else
+                return Integer.parseInt(buf);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
     }
 
     public static String hexStr2Str(String hexStr) {
